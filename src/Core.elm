@@ -16,9 +16,9 @@ A very basic example which should suit most basic cases
 
     -- import the package into your app and update the main function with the following
     Browser.element
-    { init = Core.init identity init
+    { init = Core.init identity analyticsPort init
     , view = Core.view view
-    , update = Core.update identity update setFresh Nothing Nothing
+    , update = Core.update identity analyticsPort update setFresh Nothing Nothing
     , subscriptions = Core.subscriptions subscriptions
     }    
 
@@ -37,6 +37,7 @@ import Html.Events exposing (onClick)
 import Html.Attributes as HA
 import Core.Style as S
 import Core.Assets.Icons as I
+import Json.Encode as JE
 
 
 type DefInit = 
@@ -78,25 +79,26 @@ multipleUndoRedo count wrapperMessage undolist =
 
 {-| Update is a wrapper function which adds undo,redo,reset to an updater.
 This function also logs the action and the newState via sharing it over the port.
-The function takes logger, original update function, freshStateSetter, undoCount, undoListCommands.
+The function takes logger, port for analytics, original update function, freshStateSetter, undoCount, undoListCommands.
 The function returns a new partial function which replaces the original update in your application's main function
 
 The details about the arguements
 1. **logger** : maps the program state to a loggable output. For no mapping *identity* function can be used
-2. **orginal update function** : Handlles the updates specific to your application
-3. **freshStateSetter** : A function that sets a fresh state (see undo-redo package) if the result is true.
-4. **undoCount** : Handles cases where a number of steps need to be undoed (useful when the messages are chained)
-5. **undoListCommands** : Tuple of commands which will be executed when undo/redo/reset is encountered
+2. **analyticsPort** : the port through which the telemetry data needs to be shared
+3. **orginal update function** : Handlles the updates specific to your application
+4. **freshStateSetter** : A function that sets a fresh state (see undo-redo package) if the result is true.
+5. **undoCount** : Handles cases where a number of steps need to be undoed (useful when the messages are chained)
+6. **undoListCommands** : Tuple of commands which will be executed when undo/redo/reset is encountered
 
 **NOTE** : Last three parameters are of Maybe type so you can pass Nothing if you don't wish to use them.
 -}
 
 
-update : (state -> loggableState) -> (msg -> state -> (state,Cmd msg)) -> (msg-> Bool) -> Maybe Int -> Maybe (UndoListCmds msg) -> Msg msg -> UndoList state -> (UndoList state,Cmd (Msg msg))
-update mapState updater setFresh undoRedoCount undoListCmds wrapperMessage undolist =
+update : (state -> loggableState) -> (JE.Value -> Cmd (Msg msg)) -> (msg -> state -> (state,Cmd msg)) -> (msg-> Bool) -> Maybe Int -> Maybe (UndoListCmds msg) -> Msg msg -> UndoList state -> (UndoList state,Cmd (Msg msg))
+update mapState analyticsPort updater setFresh undoRedoCount undoListCmds wrapperMessage undolist =
     let
         ((resetCmd, redoCmd), (undoCmd, forgetCmd))  = getUndoListCmds undoListCmds
-        log = (\logMsg logState -> A.sendOutLog logMsg (mapState logState))
+        log = (\logMsg logState -> A.sendOutLog logMsg (mapState logState) analyticsPort)
     in
         case wrapperMessage of
             Reset ->
@@ -153,12 +155,12 @@ subscriptions (subscriber) undolist =
 It also logs the init action
 -}
 
-init : (state -> loggableState) -> (flags -> (state,Cmd msg)) -> flags -> (UndoList state, Cmd (Msg msg))
-init mapState initializer f =
+init : (state -> loggableState) -> (JE.Value -> Cmd (Msg msg)) -> (flags -> (state,Cmd msg)) -> flags -> (UndoList state, Cmd (Msg msg))
+init mapState analyticsPort initializer f =
     let
         (newState, cmd) = initializer f
     in
-        (U.fresh newState, Cmd.batch [A.sendOutLog DefInit (mapState newState),Cmd.map New cmd] )
+        (U.fresh newState, Cmd.batch [A.sendOutLog DefInit (mapState newState) analyticsPort,Cmd.map New cmd] )
 
 
 

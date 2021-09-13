@@ -1,4 +1,4 @@
-module Buttons exposing (..)
+port module Buttons exposing (..)
 
 import Browser 
 -- import Random exposing (int)
@@ -9,7 +9,9 @@ import Core as ULE
 -- import Random as R
 -- import Graph as G
 import Dict exposing (Dict)
+import Json.Encode as JE
 
+port analytics : JE.Value -> Cmd msg
 
 subscriptions: Model -> Sub Msg
 subscriptions model =
@@ -108,9 +110,9 @@ view model =
 
 main = 
     Browser.element
-    { init = ULE.init logger init
+    { init = ULE.init logger analytics init
     , view = ULE.view view
-    , update = ULE.update logger update setFresh Nothing Nothing
+    , update = ULE.update logger analytics update setFresh Nothing Nothing
     , subscriptions = ULE.subscriptions subscriptions
     }
 

@@ -1,4 +1,4 @@
-port module Core.Analytics exposing (..)
+module Core.Analytics exposing (..)
 
 {-| This module exposes the port over which the messages and the new models are sent.
 -}
@@ -7,7 +7,7 @@ import Json.Encode as JE
 import Core.Analytics.Encoder as AE
 
 
-port analytics : JE.Value -> Cmd msg
+-- port analytics : JE.Value -> Cmd msg
 
 {-| The function which takes model and action and encodes it into JSON
 
@@ -25,8 +25,8 @@ generateJson msg model =
 {-| The command that takes the model, action and send it over the port "analytics"
 -}
 
-sendOutLog : action -> model -> Cmd msg
-sendOutLog msg model =
-    (generateJson msg model |> analytics)
+sendOutLog : action -> model -> (JE.Value -> Cmd msg )-> Cmd msg
+sendOutLog msg model analyticsPort=
+    (generateJson msg model |> analyticsPort)
 
 
