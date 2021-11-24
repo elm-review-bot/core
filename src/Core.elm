@@ -98,7 +98,7 @@ update : (state -> loggableState) -> (JE.Value -> Cmd (Msg msg)) -> (msg -> stat
 update mapState analyticsPort updater setFresh undoRedoCount undoListCmds wrapperMessage undolist =
     let
         ((resetCmd, redoCmd), (undoCmd, forgetCmd))  = getUndoListCmds undoListCmds
-        log = (\logMsg logState -> A.sendOutLog logMsg (mapState logState) analyticsPort)
+        log = (\logMsg logState -> A.sendOutLog (Just <| mapState undolist.present) logMsg (mapState logState) analyticsPort)
     in
         case wrapperMessage of
             Reset ->
@@ -160,7 +160,7 @@ init mapState analyticsPort initializer f =
     let
         (newState, cmd) = initializer f
     in
-        (U.fresh newState, Cmd.batch [A.sendOutLog DefInit (mapState newState) analyticsPort,Cmd.map New cmd] )
+        (U.fresh newState, Cmd.batch [A.sendOutLog Nothing DefInit (mapState newState) analyticsPort,Cmd.map New cmd] )
 
 
 

@@ -26,7 +26,7 @@ import Parser as P exposing (run)
 
 -}
 
-encodeAction : String -> JE.Value
+encodeAction : String -> ((String,JE.Value),(String,JE.Value))
 encodeAction actionString =
     let
         parsedAction = run CAP.parse actionString 
@@ -35,33 +35,28 @@ encodeAction actionString =
             Ok action ->
                 case action of    
                     Custom name [] ->
-                        JE.object 
-                            [ ( "type", JE.string name )
+                        (( "type", JE.string name )
                             , ( "payload", JE.null)
-                            ]
+                        )
                     
                     Custom name [val] ->
-                        JE.object 
-                            [ ( "type", JE.string name )
+                        ( ( "type", JE.string name )
                             , ( "payload", CAP.encodeFlat val )
-                            ]
+                        )
 
                     Custom name args ->
-                        JE.object
-                            [ ( "type", JE.string name )
+                        ( ( "type", JE.string name )
                             , ( "payload", args |> JE.list CAP.encodeFlat)
-                            ]
+                            )
 
                     _ ->
-                        JE.object
-                            [ ( "type", JE.string "ActionTypeError")
+                        ( ( "type", JE.string "ActionTypeError")
                             , ( "payload", JE.string "Please change Msg type to Custom Data type in Elm app")
-                            ]
+                            )
             Err lst ->
-                JE.object
-                    [ ( "type", JE.string "ActionParseError")
+                ( ( "type", JE.string "ActionParseError")
                     , ( "payload", JE.string (P.deadEndsToString lst))
-                    ]
+                )
 
 {-| encodeModel uses Analytics.Parser's encodeFlat function
 
