@@ -1,6 +1,8 @@
-module Core.Analytics exposing (..)
+module Core.Analytics exposing (generateJson,sendOutLog)
 
-{-| This module exposes the port over which the messages and the new models are sent.
+{-| This module exposes the function which sends the messages and the new models.
+
+@docs generateJson, sendOutLog
 -}
 
 import Json.Encode as JE

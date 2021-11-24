@@ -27,6 +27,7 @@ type PromptType =
     | PromptInfo
 
 {-| A prompt is a message string with prompt type 
+    
     -- A basic example of prompt
     Prompt ("You have successfully added the prompt module", PromptSuccess)
 -}

@@ -1,4 +1,4 @@
-module Core.Analytics.Encoder exposing (..)
+module Core.Analytics.Encoder exposing (encodeAction,encodeModel)
 
 {-| This module exposes the default JSON encoder for analytics telemetry
 
