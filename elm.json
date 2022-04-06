@@ -1,6 +1,6 @@
 {
     "type": "package",
-    "name": "algodynamics-packages/core",
+    "name": "algodynamics-iiith/core",
     "summary": "Core library for algodynamics virtual interactive labs",
     "license": "BSD-3-Clause",
     "version": "1.0.0",
